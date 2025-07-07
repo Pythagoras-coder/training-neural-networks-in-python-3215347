@@ -83,7 +83,7 @@ class MultiLayerPerceptron:
             raise ValueError("The number of inputs does not match the number of inputs in the input layer.")
         self.values[0] = x # Set the input layer values
         for i in range(1,len(self.network)): # For each layer except the input layer
-            for j in range(self.network[i]): # For each perceptron in the layer
-                self.values[i][j] = self.network[i][j].run(x,self.values[i-1])  # Run the perceptron with the input values from the previous layer
+            for j in range(len(self.network[i])): # For each perceptron in the layer
+                self.values[i][j] = self.network[i][j].run(self.values[i-1])  # Run the perceptron with the input values from the previous layer
         return self.values[-1]
         
