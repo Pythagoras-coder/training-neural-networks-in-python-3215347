@@ -8,7 +8,7 @@ class Perceptron:
 
     def __init__(self, inputs, bias = 1.0):
         """Return a new Perceptron object with the specified number of inputs (+1 for the bias).""" 
-        self.weights = (np.random.rand(inputs+1) * 2) - 1 
+        self.weights = (np.random.rand(inputs+1) * 2) - 1 # Initialize weights randomly between -1 and 1
         self.bias = bias
 
     def run(self, x):
@@ -33,7 +33,7 @@ class MultiLayerPerceptron:
           bias:    The bias term. The same bias is used for all neurons.
           eta:     The learning rate."""
 
-    def __init__(self, layers, bias = 1.0, eta = 0.5):
+    def __init__(self, layers, bias = 1.0, eta = 0.3):
         """Return a new MLP object with the specified parameters.""" 
         self.layers = np.array(layers,dtype=object)
         self.bias = bias
@@ -88,24 +88,34 @@ class MultiLayerPerceptron:
         # Here you have it step by step:
 
         # STEP 1: Feed a sample to the network 
-        
-        # STEP 2: Calculate the MSE
+        self.run(x)
+        # STEP 2: Calculate the MSE Mean Square Error
+        # MSE = mean(square(y - output))
+        difsquare = np.square(y - self.values[-1])
+        MSE = np.mean(difsquare)
 
         # STEP 3: Calculate the output error terms
+        for j in range(self.layers[-1]): # for each output value (last layer in the network)
+            self.d[-1][j] = self.values[-1][j] * (1 - self.values[-1][j]) * (y[j] - self.values[-1][j])
 
-        # STEP 4: Calculate the error term of each unit on each layer
+        # STEP 4: Calculate the error term of each unit on each inner (hidden) layer
         for i in reversed(range(1,len(self.network)-1)):
-            for h in range(len(self.network[i])):
+            for h in range(self.layers[i]):
                 fwd_error = 0.0
                 for k in range(self.layers[i+1]): 
-                    fwd_error += # fill in the blank               
-                self.d[i][h] = # fill in the blank
+                    fwd_error += self.network[i+1][k].weights[h] * self.d[i+1][k]
+                self.d[i][h] = self.values[i][h] * (1 - self.values[i][h]) * fwd_error
 
         # STEPS 5 & 6: Calculate the deltas and update the weights
         for i in range(1,len(self.network)):
             for j in range(self.layers[i]):
-                for k in range(self.layers[i-1]+1):
-                    pass# fill in the blank
+                newweights = []
+                for k in range(self.layers[i-1]):
+                    deltaweightk = self.eta * self.d[i][j] * self.values[i-1][k]
+                    newweights.append(self.network[i][j].weights[k] + deltaweightk)
+                newweights.append(self.network[i][j].weights[-1] + self.eta * self.d[i][j] * self.bias) # Update the bias weight
+                self.network[i][j].set_weights(newweights)
+        # STEP 7: Return the MSE
         return MSE
 
 
@@ -122,6 +132,7 @@ for i in range(3000):
     mse = mse / 4
     if(i%100 == 0):
         print (mse)
+        pass
 
 mlp.print_weights()
     
