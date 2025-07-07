@@ -55,8 +55,19 @@ class MultiLayerPerceptron:
 
     def set_weights(self, w_init):
         # Write all the weights into the neural network.
-        # w_init is a list of floats. Organize it as you'd like. 
-        pass       
+        # w_init is a list that conatins a sublist per layer
+        # The first layer has no weights, so the first sublist is empty.
+        # Each layer has a sublist with the weights for each neuron in that layer.
+        # Each neuron has a list of weights, one for each input plus one for the bias.
+        if len(w_init) != len(self.network):
+            raise ValueError("The number of weight lists does not match the number of layers.")
+        for i in range(1, len(self.network)):
+            if len(w_init[i]) != self.layers[i]:
+                raise ValueError("The number of weight lists in layer {} does not match the number of neurons.".format(i))
+            for j in range(self.layers[i]):
+                if len(w_init[i][j]) != self.layers[i-1] + 1:
+                    raise ValueError("The number of weights for neuron {} in layer {} does not match the number of inputs.".format(j, i))
+                self.network[i][j].set_weights(w_init[i][j])  # Set the weights for each neuron in the layer
 
     def print_weights(self):
         print()
@@ -68,5 +79,11 @@ class MultiLayerPerceptron:
     def run(self, x):
         # Run an input forward through the neural network.
         # x is a python list with the input values.
+        if len(x) != self.layers[0]:
+            raise ValueError("The number of inputs does not match the number of inputs in the input layer.")
+        self.values[0] = x # Set the input layer values
+        for i in range(1,len(self.network)): # For each layer except the input layer
+            for j in range(self.network[i]): # For each perceptron in the layer
+                self.values[i][j] = self.network[i][j].run(x,self.values[i-1])  # Run the perceptron with the input values from the previous layer
         return self.values[-1]
         
